@@ -100,12 +100,25 @@
 
 ## 快速开始
 
+### 🎯 超简单启动（推荐新用户）
+
+```bash
+# 克隆项目后，只需要一个命令！
+./start.sh
+```
+
+首次运行会自动：
+1. 检查系统环境
+2. 引导你配置网络参数
+3. 安装所有依赖 
+4. 构建和启动项目
+
 ### 环境要求
 - Node.js 16+ 
 - npm 8+
 - 一个或多个 Proxmox VE 服务器
 
-### 安装依赖
+### 手动安装依赖（可选）
 
 ```bash
 # 安装根项目依赖
@@ -118,7 +131,42 @@ cd server && npm install
 cd ../client && npm install
 ```
 
-### 开发模式启动
+### 🚀 快速启动（推荐）
+
+**新的一键启动方式** - 包含项目初始化和配置：
+
+```bash
+# 一键启动（首次运行会自动进入配置向导）
+./start.sh
+
+# 重新配置项目参数
+./start.sh --init
+
+# 重置所有配置
+./start.sh --reset
+```
+
+启动脚本会自动：
+- 检查系统依赖
+- 初始化项目配置（首次运行）
+- 安装所需依赖
+- 构建项目
+- 启动前后端服务
+
+### 传统启动方式
+
+#### 配置API服务器地址
+
+如果使用传统方式启动，需要先配置API地址：
+
+```bash
+# 使用自动配置脚本
+./configure-ip.sh                    # 交互式配置
+./configure-ip.sh 192.168.1.100      # 直接设置服务器IP
+./configure-ip.sh --auto             # 自动检测本机IP
+```
+
+#### 开发模式启动
 
 ```bash
 # 在项目根目录运行，会同时启动前后端
@@ -148,7 +196,12 @@ npm start
 ## 使用说明
 
 ### 1. 添加PVE连接
-1. 访问 `http://localhost:5173`
+
+**重要**: 根据你的部署方式访问相应的地址：
+- 同机器部署: `http://localhost:5173`
+- 跨机器部署: `http://服务器IP:5173` (例如: `http://192.168.1.100:5173`)
+
+1. 访问前端页面
 2. 点击侧边栏"PVE连接"
 3. 点击"添加连接"按钮
 4. 填写PVE服务器信息：
@@ -267,9 +320,65 @@ node dev-logger/simple-logger.js log "activity_name"
 ## 配置说明
 
 ### 环境变量
+
+#### 后端配置
 - `PORT`: 后端服务端口 (默认: 3000)
 - `CLIENT_URL`: 前端地址 (默认: http://localhost:5173)
 - `NODE_ENV`: 运行环境 (development/production)
+
+#### 前端配置
+
+**重要提示**: 根据你的部署场景选择相应的配置方式
+
+##### 场景1: 同一台机器部署（服务器和前端在同一台机器）
+创建 `client/.env` 文件：
+```bash
+VITE_API_BASE_URL=http://localhost:3000
+VITE_WS_URL=ws://localhost:3000
+VITE_ENV=development
+```
+
+##### 场景2: 跨机器部署（服务器和客户端在不同机器）⭐
+这是最常见的生产部署场景。
+
+**方式1: 使用自动配置脚本（推荐）**
+```bash
+# Linux/macOS
+./configure-ip.sh                    # 交互式配置
+./configure-ip.sh 192.168.1.100      # 直接设置IP
+./configure-ip.sh --auto             # 自动检测本机IP
+
+# Windows
+configure-ip.bat                     # 交互式配置  
+configure-ip.bat 192.168.1.100      # 直接设置IP
+configure-ip.bat --auto             # 自动检测本机IP
+```
+
+**方式2: 手动创建配置文件**
+创建 `client/.env` 文件：
+```bash
+# 将 YOUR_SERVER_IP 替换为实际的服务器IP地址
+VITE_API_BASE_URL=http://YOUR_SERVER_IP:3000
+VITE_WS_URL=ws://YOUR_SERVER_IP:3000
+VITE_ENV=production
+
+# 示例：如果服务器IP是 192.168.1.100
+# VITE_API_BASE_URL=http://192.168.1.100:3000
+# VITE_WS_URL=ws://192.168.1.100:3000
+```
+
+##### 场景3: 使用域名部署
+```bash
+VITE_API_BASE_URL=https://your-domain.com
+VITE_WS_URL=wss://your-domain.com
+VITE_ENV=production
+```
+
+**后端CORS配置**: 
+- 开发环境：自动支持局域网内所有IP的5173端口访问
+- 生产环境：可通过 `CLIENT_URL` 环境变量指定允许的前端地址
+
+> 💡 **提示**: 可以参考 `client/.env.example` 文件查看详细配置说明。
 
 ### PVE服务器要求
 - Proxmox VE 6.0+

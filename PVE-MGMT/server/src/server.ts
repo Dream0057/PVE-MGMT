@@ -20,12 +20,35 @@ const database = require('./db/database');
 
 const app = express();
 const server = createServer(app);
-const allowedOrigins = [
-  "http://localhost:5173",
-  "http://YOUR_DEV_SERVER_IP:5173"
+// 动态构建允许的源列表
+const CLIENT_PORT = process.env.CLIENT_PORT || '5173';
+const allowedOrigins: (string | RegExp)[] = [
+  `http://localhost:${CLIENT_PORT}`,
+  `http://127.0.0.1:${CLIENT_PORT}`,
 ];
+
+// 添加环境变量中指定的客户端URL
 if (process.env.CLIENT_URL) {
   allowedOrigins.push(process.env.CLIENT_URL);
+}
+
+// 如果配置了API_HOST，添加对应的客户端访问地址
+if (process.env.API_HOST && process.env.API_HOST !== 'localhost') {
+  allowedOrigins.push(`http://${process.env.API_HOST}:${CLIENT_PORT}`);
+}
+
+// 处理自定义的ALLOWED_ORIGINS
+if (process.env.ALLOWED_ORIGINS) {
+  const customOrigins = process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim());
+  allowedOrigins.push(...customOrigins);
+}
+
+// 在开发环境下，允许任何本地网络的访问
+if (process.env.NODE_ENV === 'development') {
+  // 允许局域网内的所有IP访问
+  allowedOrigins.push(new RegExp(`^http:\\/\\/192\\.168\\.\\d+\\.\\d+:${CLIENT_PORT}$`));
+  allowedOrigins.push(new RegExp(`^http:\\/\\/10\\.\\d+\\.\\d+\\.\\d+:${CLIENT_PORT}$`));
+  allowedOrigins.push(new RegExp(`^http:\\/\\/172\\.(1[6-9]|2\\d|3[01])\\.\\d+\\.\\d+:${CLIENT_PORT}$`));
 }
 
 const io = new SocketIOServer(server, {
@@ -35,7 +58,8 @@ const io = new SocketIOServer(server, {
   }
 });
 
-const PORT = parseInt(process.env.PORT || '3000', 10);
+const PORT = parseInt(process.env.SERVER_PORT || process.env.PORT || '3000', 10);
+const HOST = process.env.SERVER_HOST || '0.0.0.0';
 
 // 创建PVE管理器实例
 const pveManager = new PVEManager();
@@ -250,9 +274,13 @@ app.use('*', (req, res) => {
 });
 
 // 启动服务器
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`PVE Manager服务器启动成功，端口: ${PORT}`);
+server.listen(PORT, HOST, () => {
+  console.log(`PVE Manager服务器启动成功`);
+  console.log(`监听地址: ${HOST}:${PORT}`);
   console.log(`环境: ${process.env.NODE_ENV || 'development'}`);
+  if (process.env.API_HOST) {
+    console.log(`外部访问地址: http://${process.env.API_HOST}:${PORT}`);
+  }
   
   // 启动PVE监控
   pveManager.startMonitoring(30000); // 30秒间隔

@@ -13,7 +13,7 @@ declare -A REPLACEMENTS=(
     
     # IP地址清理
     ["192.168.2.254"]="YOUR_PVE_SERVER_IP"
-    ["192.168.2.13"]="YOUR_DEV_SERVER_IP"
+    ["192.168.2.13"]="localhost"
     ["192.168.2.4"]="YOUR_CLIENT_IP"
     ["192.168.1.100"]="YOUR_PVE_IP"
     

@@ -6,9 +6,6 @@
 - Node.js 16+
 - npm 8+
 - 能访问PVE服务器的网络环境
-安装命令：
-curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
-apt install -y nodejs
 
 ### 1. 启动应用
 ```bash
