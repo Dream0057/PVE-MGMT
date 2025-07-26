@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PVE SDN 配置管理</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #667eea;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .status-bar {
+            background: #f8f9ff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-left: 5px solid #667eea;
+        }
+        
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .status-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .status-label {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .status-value {
+            color: #666;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #dc3545;
+        }
+        
+        .status-indicator.connected {
+            background: #28a745;
+        }
+        
+        .config-section {
+            background: #f8f9ff;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 2px solid #e8eaff;
+        }
+        
+        .config-section h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .help-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-1px);
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-success {
+            background: #28a745;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .alert-success {
+            color: #155724;
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+        
+        .alert-error {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        
+        .alert-warning {
+            color: #856404;
+            background-color: #fff3cd;
+            border-color: #ffeaa7;
+        }
+        
+        .navigation {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .nav-link {
+            color: #667eea;
+            text-decoration: none;
+            margin: 0 15px;
+            font-weight: bold;
+        }
+        
+        .nav-link:hover {
+            color: #764ba2;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ccc;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .test-result {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .test-result.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .test-result.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚙️ PVE SDN 配置管理</h1>
+            <div style="color: #666;">配置PVE连接参数和系统设置</div>
+        </div>
+
+        <div class="status-bar">
+            <div class="status-item">
+                <span class="status-label">🔗 PVE连接状态</span>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span class="status-value" id="connection-status">未知</span>
+                    <div class="status-indicator" id="connection-indicator"></div>
+                </div>
+            </div>
+            <div class="status-item">
+                <span class="status-label">📊 系统状态</span>
+                <span class="status-value" id="system-status">加载中...</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">📝 最后更新</span>
+                <span class="status-value" id="last-updated">--</span>
+            </div>
+        </div>
+
+        <div id="alert" class="alert"></div>
+
+        <div class="config-section">
+            <h3>🔗 PVE 服务器连接</h3>
+            <form id="pve-config-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="pve-host">PVE服务器地址 *</label>
+                        <input type="text" id="pve-host" placeholder="YOUR_PVE_IP" required>
+                        <div class="help-text">PVE服务器的IP地址或域名</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="pve-port">API端口</label>
+                        <input type="number" id="pve-port" placeholder="8006" value="8006" min="1" max="65535">
+                        <div class="help-text">PVE Web API端口，默认8006</div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="pve-username">用户名 *</label>
+                        <input type="text" id="pve-username" placeholder="root@pam" required>
+                        <div class="help-text">PVE登录用户名，如: root@pam</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="pve-password">密码 *</label>
+                        <input type="password" id="pve-password" placeholder="请输入密码" required>
+                        <div class="help-text">PVE用户密码</div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="pve-node">默认节点</label>
+                        <input type="text" id="pve-node" placeholder="pve" value="pve">
+                        <div class="help-text">默认操作的PVE节点名称</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="pve-timeout">连接超时(ms)</label>
+                        <input type="number" id="pve-timeout" placeholder="10000" value="10000" min="1000" max="60000">
+                        <div class="help-text">API请求超时时间，单位毫秒</div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <button type="button" class="btn btn-success" onclick="testConnection()">
+                        <span id="test-loading" style="display: none;" class="loading"></span>
+                        🔍 测试连接
+                    </button>
+                    <button type="submit" class="btn">💾 保存配置</button>
+                </div>
+                
+                <div id="test-result" class="test-result"></div>
+            </form>
+        </div>
+
+        <div class="config-section">
+            <h3>🛠️ 系统设置</h3>
+            <form id="system-config-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="auto-apply">自动应用SDN配置</label>
+                        <select id="auto-apply">
+                            <option value="true">启用</option>
+                            <option value="false">禁用</option>
+                        </select>
+                        <div class="help-text">修改网络后是否自动应用配置</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="log-level">日志级别</label>
+                        <select id="log-level">
+                            <option value="error">Error</option>
+                            <option value="warn">Warning</option>
+                            <option value="info">Info</option>
+                            <option value="debug">Debug</option>
+                        </select>
+                        <div class="help-text">系统日志记录级别</div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <button type="submit" class="btn">💾 保存系统设置</button>
+                    <button type="button" class="btn btn-warning" onclick="loadConfig()">🔄 重载配置</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="navigation">
+            <a href="/" class="nav-link">🏠 返回主页</a>
+            <a href="/api/status" class="nav-link" target="_blank">📊 系统状态</a>
+        </div>
+    </div>
+
+    <script>
+        // 全局状态
+        let currentConfig = null;
+        
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadStatus();
+            await loadConfig();
+            
+            // 绑定表单事件
+            document.getElementById('pve-config-form').addEventListener('submit', savePVEConfig);
+            document.getElementById('system-config-form').addEventListener('submit', saveSystemConfig);
+            
+            // 定期更新状态
+            setInterval(loadStatus, 30000); // 30秒更新一次
+        });
+
+        // 显示警告信息
+        function showAlert(message, type = 'success') {
+            const alert = document.getElementById('alert');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            alert.style.display = 'block';
+            
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
+        }
+
+        // 加载系统状态
+        async function loadStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                
+                // 更新连接状态
+                const connected = data.pve?.connected || false;
+                document.getElementById('connection-status').textContent = 
+                    connected ? '已连接' : '未连接';
+                document.getElementById('connection-indicator').className = 
+                    `status-indicator ${connected ? 'connected' : ''}`;
+                
+                // 更新系统状态
+                document.getElementById('system-status').textContent = 
+                    `运行中 (v${data.system.version})`;
+                
+                // 更新最后更新时间
+                document.getElementById('last-updated').textContent = 
+                    new Date(data.timestamp).toLocaleString();
+                    
+            } catch (error) {
+                console.error('加载状态失败:', error);
+                document.getElementById('connection-status').textContent = '连接失败';
+                document.getElementById('system-status').textContent = '状态未知';
+            }
+        }
+
+        // 加载配置
+        async function loadConfig() {
+            try {
+                const response = await fetch('/api/config');
+                const config = await response.json();
+                currentConfig = config;
+                
+                if (config.pve) {
+                    document.getElementById('pve-host').value = config.pve.host || '';
+                    document.getElementById('pve-port').value = config.pve.port || 8006;
+                    document.getElementById('pve-username').value = config.pve.username || '';
+                    document.getElementById('pve-password').value = ''; // 不显示密码
+                    document.getElementById('pve-node').value = config.pve.node || 'pve';
+                    document.getElementById('pve-timeout').value = config.pve.timeout || 10000;
+                }
+                
+                if (config.system) {
+                    document.getElementById('auto-apply').value = config.system.autoApply ? 'true' : 'false';
+                    document.getElementById('log-level').value = config.system.logLevel || 'info';
+                }
+                
+                showAlert('配置加载成功', 'success');
+            } catch (error) {
+                console.error('加载配置失败:', error);
+                showAlert('配置加载失败: ' + error.message, 'error');
+            }
+        }
+
+        // 测试PVE连接
+        async function testConnection() {
+            const testBtn = document.querySelector('button[onclick="testConnection()"]');
+            const loading = document.getElementById('test-loading');
+            const testResult = document.getElementById('test-result');
+            
+            // 显示加载状态
+            testBtn.disabled = true;
+            loading.style.display = 'inline-block';
+            testResult.style.display = 'none';
+            
+            try {
+                const response = await fetch('/api/config/test-connection', {
+                    method: 'POST'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    testResult.className = 'test-result success';
+                    testResult.textContent = `连接成功！PVE版本: ${result.data.version || '未知'}`;
+                    showAlert('PVE连接测试成功', 'success');
+                } else {
+                    testResult.className = 'test-result error';
+                    testResult.textContent = `连接失败: ${result.error}`;
+                    showAlert('PVE连接测试失败', 'error');
+                }
+                
+                testResult.style.display = 'block';
+                
+            } catch (error) {
+                testResult.className = 'test-result error';
+                testResult.textContent = `测试异常: ${error.message}`;
+                testResult.style.display = 'block';
+                showAlert('连接测试异常: ' + error.message, 'error');
+            } finally {
+                testBtn.disabled = false;
+                loading.style.display = 'none';
+            }
+        }
+
+        // 保存PVE配置
+        async function savePVEConfig(event) {
+            event.preventDefault();
+            
+            const config = {
+                host: document.getElementById('pve-host').value.trim(),
+                port: parseInt(document.getElementById('pve-port').value) || 8006,
+                username: document.getElementById('pve-username').value.trim(),
+                password: document.getElementById('pve-password').value,
+                node: document.getElementById('pve-node').value.trim() || 'pve',
+                timeout: parseInt(document.getElementById('pve-timeout').value) || 10000
+            };
+            
+            // 验证必填字段
+            if (!config.host || !config.username || !config.password) {
+                showAlert('请填写所有必填字段', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/config/pve', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(config)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('PVE配置保存成功', 'success');
+                    await loadStatus(); // 重新加载状态
+                    
+                    // 清空密码字段
+                    document.getElementById('pve-password').value = '';
+                } else {
+                    showAlert('保存失败: ' + (result.errors ? result.errors.join(', ') : result.error), 'error');
+                }
+            } catch (error) {
+                showAlert('保存配置失败: ' + error.message, 'error');
+            }
+        }
+
+        // 保存系统配置
+        async function saveSystemConfig(event) {
+            event.preventDefault();
+            
+            const config = {
+                autoApply: document.getElementById('auto-apply').value === 'true',
+                logLevel: document.getElementById('log-level').value
+            };
+            
+            try {
+                const response = await fetch('/api/config/system', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(config)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('系统配置保存成功', 'success');
+                } else {
+                    showAlert('保存失败: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showAlert('保存系统配置失败: ' + error.message, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

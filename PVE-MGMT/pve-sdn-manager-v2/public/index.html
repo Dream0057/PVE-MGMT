@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PVE SDN 管理系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #667eea;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .status-banner {
+            background: #f8f9ff;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 5px solid #667eea;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #dc3545;
+        }
+        
+        .status-indicator.connected {
+            background: #28a745;
+        }
+        
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .section {
+            background: #f8f9ff;
+            border-radius: 12px;
+            padding: 25px;
+            border: 2px solid #e8eaff;
+        }
+        
+        .section h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .nodes-list, .sdn-list, .vm-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .item {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            transition: all 0.3s ease;
+        }
+        
+        .item:hover {
+            border-color: #667eea;
+            transform: translateY(-1px);
+        }
+        
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .item-title {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .item-status {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: #e9ecef;
+            color: #6c757d;
+        }
+        
+        .item-status.online {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .item-status.running {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .item-details {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+        
+        .btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-1px);
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-success {
+            background: #28a745;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ccc;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .alert-success {
+            color: #155724;
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+        
+        .alert-error {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        
+        .alert-warning {
+            color: #856404;
+            background-color: #fff3cd;
+            border-color: #ffeaa7;
+        }
+        
+        .navigation {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .nav-link {
+            color: #667eea;
+            text-decoration: none;
+            margin: 0 15px;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            background: #e8eaff;
+            color: #764ba2;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 12px;
+            width: 80%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: #000;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .help-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 10px auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌐 PVE SDN 管理系统</h1>
+            <div style="color: #666;">Software Defined Network 管理平台</div>
+        </div>
+
+        <div class="status-banner">
+            <div class="status-item">
+                <span>🔗 PVE连接状态:</span>
+                <span id="connection-status">检查中...</span>
+                <div class="status-indicator" id="connection-indicator"></div>
+            </div>
+            <div class="status-item">
+                <span>📊 系统版本:</span>
+                <span id="system-version">v2.0.0</span>
+            </div>
+            <div class="status-item">
+                <button class="btn" onclick="refreshAll()">
+                    <span id="refresh-loading" style="display: none;" class="loading"></span>
+                    🔄 刷新数据
+                </button>
+            </div>
+        </div>
+
+        <div id="alert" class="alert"></div>
+
+        <div class="main-grid">
+            <div class="section">
+                <h3>🖥️ 集群节点管理</h3>
+                <div class="nodes-list" id="nodes-list">
+                    <div style="text-align: center; color: #666; padding: 20px;">
+                        加载中...
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>🌐 SDN 网络管理
+                    <button class="btn btn-success" onclick="showCreateNetworkModal()">➕ 创建网络</button>
+                </h3>
+                <div class="sdn-list" id="sdn-list">
+                    <div style="text-align: center; color: #666; padding: 20px;">
+                        加载中...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>🖥️ 虚拟机网络管理</h3>
+            <div class="vm-list" id="vm-list">
+                <div style="text-align: center; color: #666; padding: 20px;">
+                    请先选择一个节点查看VM列表
+                </div>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <a href="/config" class="nav-link">⚙️ 系统配置</a>
+            <a href="/api/status" class="nav-link" target="_blank">📊 系统状态</a>
+            <button class="btn btn-warning" onclick="applySDNConfig()">🔄 应用SDN配置</button>
+        </div>
+    </div>
+
+    <!-- 创建网络模态框 -->
+    <div id="createNetworkModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🌐 创建 SDN 网络</h3>
+                <span class="close" onclick="closeModal('createNetworkModal')">&times;</span>
+            </div>
+            <form id="createNetworkForm">
+                <div class="form-group">
+                    <label for="vnet-name">网络名称 *</label>
+                    <input type="text" id="vnet-name" required placeholder="例如: vnet1">
+                    <div class="help-text">SDN虚拟网络的唯一标识符</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="vnet-zone">网络区域</label>
+                    <input type="text" id="vnet-zone" placeholder="例如: localnetwork">
+                    <div class="help-text">指定网络所属的区域</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="vnet-tag">VLAN标签</label>
+                    <input type="number" id="vnet-tag" min="1" max="4094" placeholder="例如: 100">
+                    <div class="help-text">可选的VLAN标签 (1-4094)</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="vnet-alias">网络别名</label>
+                    <input type="text" id="vnet-alias" placeholder="例如: 开发环境网络">
+                    <div class="help-text">网络的描述性名称</div>
+                </div>
+                
+                <div style="text-align: right; margin-top: 20px;">
+                    <button type="button" class="btn" onclick="closeModal('createNetworkModal')">取消</button>
+                    <button type="submit" class="btn btn-success">创建网络</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- VM网络配置模态框 -->
+    <div id="vmNetworkModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🔌 VM网络配置</h3>
+                <span class="close" onclick="closeModal('vmNetworkModal')">&times;</span>
+            </div>
+            <div id="vm-network-content">
+                <!-- 动态内容 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局状态
+        let nodesData = [];
+        let sdnNetworks = [];
+        let selectedNode = null;
+        let vmData = [];
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkSystemStatus();
+            await loadNodes();
+            await loadSDNNetworks();
+            
+            // 定期刷新状态
+            setInterval(checkSystemStatus, 30000);
+        });
+
+        // 显示警告信息
+        function showAlert(message, type = 'success') {
+            const alert = document.getElementById('alert');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            alert.style.display = 'block';
+            
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
+        }
+
+        // 检查系统状态
+        async function checkSystemStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                
+                // 更新连接状态
+                const connected = data.pve?.connected || false;
+                document.getElementById('connection-status').textContent = 
+                    connected ? '已连接' : '未连接';
+                document.getElementById('connection-indicator').className = 
+                    `status-indicator ${connected ? 'connected' : ''}`;
+                
+                // 更新系统版本
+                document.getElementById('system-version').textContent = 
+                    `v${data.system.version}`;
+                    
+            } catch (error) {
+                console.error('检查系统状态失败:', error);
+                document.getElementById('connection-status').textContent = '连接失败';
+            }
+        }
+
+        // 加载节点列表
+        async function loadNodes() {
+            try {
+                const response = await fetch('/api/nodes');
+                const result = await response.json();
+                
+                if (result.success) {
+                    nodesData = result.data;
+                    renderNodes();
+                } else {
+                    throw new Error(result.message || '获取节点列表失败');
+                }
+            } catch (error) {
+                console.error('加载节点失败:', error);
+                document.getElementById('nodes-list').innerHTML = 
+                    `<div style="text-align: center; color: #dc3545; padding: 20px;">
+                        ❌ 加载失败: ${error.message}
+                        <br><small>请检查PVE连接配置</small>
+                    </div>`;
+            }
+        }
+
+        // 渲染节点列表
+        function renderNodes() {
+            const container = document.getElementById('nodes-list');
+            
+            if (nodesData.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">没有找到节点</div>';
+                return;
+            }
+            
+            container.innerHTML = nodesData.map(node => `
+                <div class="item ${selectedNode === node.node ? 'selected' : ''}" onclick="selectNode('${node.node}')">
+                    <div class="item-header">
+                        <div class="item-title">🖥️ ${node.node}</div>
+                        <div class="item-status ${node.status === 'online' ? 'online' : ''}">${node.status || '未知'}</div>
+                    </div>
+                    <div class="item-details">
+                        类型: ${node.type || 'node'} | CPU: ${node.cpu || 'N/A'} | 内存: ${node.mem || 'N/A'}
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <button class="btn" onclick="event.stopPropagation(); loadVMs('${node.node}')">查看VM</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 选择节点
+        function selectNode(nodeName) {
+            selectedNode = nodeName;
+            renderNodes();
+            loadVMs(nodeName);
+        }
+
+        // 加载VM列表
+        async function loadVMs(node) {
+            const vmContainer = document.getElementById('vm-list');
+            vmContainer.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">加载中...</div>';
+            
+            try {
+                const response = await fetch(`/api/nodes/${node}/vms`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    vmData = result.data.map(vm => ({ ...vm, node }));
+                    renderVMs();
+                } else {
+                    throw new Error(result.message || '获取VM列表失败');
+                }
+            } catch (error) {
+                console.error('加载VM失败:', error);
+                vmContainer.innerHTML = 
+                    `<div style="text-align: center; color: #dc3545; padding: 20px;">
+                        ❌ 加载失败: ${error.message}
+                    </div>`;
+            }
+        }
+
+        // 渲染VM列表
+        function renderVMs() {
+            const container = document.getElementById('vm-list');
+            
+            if (vmData.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">该节点没有VM</div>';
+                return;
+            }
+            
+            container.innerHTML = vmData.map(vm => `
+                <div class="item">
+                    <div class="item-header">
+                        <div class="item-title">🖥️ ${vm.name || `VM-${vm.vmid}`}</div>
+                        <div class="item-status ${vm.status === 'running' ? 'running' : ''}">${vm.status || '未知'}</div>
+                    </div>
+                    <div class="item-details">
+                        节点: ${vm.node} | VMID: ${vm.vmid} | CPU: ${vm.cpus || 'N/A'} | 内存: ${vm.mem || 'N/A'}MB
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <button class="btn" onclick="showVMNetworkConfig('${vm.node}', '${vm.vmid}')">网络配置</button>
+                        <button class="btn btn-success" onclick="showJoinSDNModal('${vm.node}', '${vm.vmid}')">加入SDN</button>
+                        <button class="btn btn-warning" onclick="leaveSDN('${vm.node}', '${vm.vmid}')">离开SDN</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 加载SDN网络列表
+        async function loadSDNNetworks() {
+            try {
+                const response = await fetch('/api/sdn/networks');
+                const result = await response.json();
+                
+                if (result.success) {
+                    sdnNetworks = result.data;
+                    renderSDNNetworks();
+                } else {
+                    throw new Error(result.message || result.error || '获取SDN网络失败');
+                }
+            } catch (error) {
+                console.error('加载SDN网络失败:', error);
+                document.getElementById('sdn-list').innerHTML = 
+                    `<div style="text-align: center; color: #dc3545; padding: 20px;">
+                        ❌ 加载失败: ${error.message}
+                        <br><small>${error.message.includes('SDN') ? '请检查PVE版本(需要7.0+)和SDN配置' : '请检查PVE连接配置'}</small>
+                    </div>`;
+            }
+        }
+
+        // 渲染SDN网络列表
+        function renderSDNNetworks() {
+            const container = document.getElementById('sdn-list');
+            
+            if (sdnNetworks.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">没有SDN网络<br><small>点击"创建网络"开始</small></div>';
+                return;
+            }
+            
+            container.innerHTML = sdnNetworks.map(network => `
+                <div class="item">
+                    <div class="item-header">
+                        <div class="item-title">🌐 ${network.vnet}</div>
+                        <div class="item-status">${network.type || 'vnet'}</div>
+                    </div>
+                    <div class="item-details">
+                        区域: ${network.zone || 'N/A'} | 标签: ${network.tag || 'N/A'} | 别名: ${network.alias || 'N/A'}
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <button class="btn btn-warning" onclick="editSDNNetwork('${network.vnet}')">编辑</button>
+                        <button class="btn btn-danger" onclick="deleteSDNNetwork('${network.vnet}')">删除</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 显示创建网络模态框
+        function showCreateNetworkModal() {
+            // 检查SDN功能是否可用
+            if (sdnNetworks.length === 0 && document.getElementById('sdn-list').innerHTML.includes('SDN功能未启用')) {
+                showAlert('当前PVE环境不支持SDN功能，无法创建网络', 'warning');
+                return;
+            }
+            document.getElementById('createNetworkModal').style.display = 'block';
+        }
+
+        // 关闭模态框
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // 创建网络表单提交
+        document.getElementById('createNetworkForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                vnet: document.getElementById('vnet-name').value.trim(),
+                zone: document.getElementById('vnet-zone').value.trim() || undefined,
+                tag: document.getElementById('vnet-tag').value || undefined,
+                alias: document.getElementById('vnet-alias').value.trim() || undefined
+            };
+            
+            try {
+                const response = await fetch('/api/sdn/networks', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('SDN网络创建成功', 'success');
+                    closeModal('createNetworkModal');
+                    document.getElementById('createNetworkForm').reset();
+                    await loadSDNNetworks();
+                } else {
+                    if (result.hint === 'SDN_NOT_SUPPORTED') {
+                        showAlert('SDN功能未启用: ' + result.message, 'warning');
+                    } else {
+                        showAlert('创建失败: ' + result.message, 'error');
+                    }
+                }
+            } catch (error) {
+                showAlert('创建网络失败: ' + error.message, 'error');
+            }
+        });
+
+        // 删除SDN网络
+        async function deleteSDNNetwork(vnet) {
+            if (!confirm(`确定要删除SDN网络 "${vnet}" 吗？`)) return;
+            
+            try {
+                const response = await fetch(`/api/sdn/networks/${vnet}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('SDN网络删除成功', 'success');
+                    await loadSDNNetworks();
+                } else {
+                    showAlert('删除失败: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showAlert('删除网络失败: ' + error.message, 'error');
+            }
+        }
+
+        // 显示VM网络配置
+        async function showVMNetworkConfig(node, vmid) {
+            try {
+                const response = await fetch(`/api/nodes/${node}/vms/${vmid}/config`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    const config = result.data;
+                    const networkInterfaces = Object.keys(config)
+                        .filter(key => key.startsWith('net'))
+                        .map(key => ({ id: key, config: config[key] }));
+                    
+                    document.getElementById('vm-network-content').innerHTML = `
+                        <h4>VM ${vmid} 网络配置</h4>
+                        <div style="margin: 20px 0;">
+                            ${networkInterfaces.length === 0 ? 
+                                '<p>没有找到网络接口</p>' :
+                                networkInterfaces.map(iface => `
+                                    <div style="background: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 8px;">
+                                        <strong>${iface.id}:</strong> ${iface.config}
+                                    </div>
+                                `).join('')
+                            }
+                        </div>
+                        <div style="text-align: right;">
+                            <button class="btn" onclick="closeModal('vmNetworkModal')">关闭</button>
+                        </div>
+                    `;
+                    
+                    document.getElementById('vmNetworkModal').style.display = 'block';
+                } else {
+                    showAlert('获取VM配置失败: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showAlert('获取VM配置失败: ' + error.message, 'error');
+            }
+        }
+
+        // 显示加入SDN模态框
+        function showJoinSDNModal(node, vmid) {
+            if (sdnNetworks.length === 0) {
+                showAlert('没有可用的SDN网络，请先创建网络', 'warning');
+                return;
+            }
+            
+            const networkOptions = sdnNetworks.map(net => 
+                `<option value="${net.vnet}">${net.vnet} (${net.alias || '无别名'})</option>`
+            ).join('');
+            
+            document.getElementById('vm-network-content').innerHTML = `
+                <h4>VM ${vmid} 加入SDN网络</h4>
+                <form id="joinSDNForm">
+                    <div class="form-group">
+                        <label>选择SDN网络</label>
+                        <select id="selected-vnet" required>
+                            <option value="">请选择网络</option>
+                            ${networkOptions}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>网络接口ID</label>
+                        <input type="text" id="net-id" value="net0" required>
+                        <div class="help-text">通常为 net0, net1, net2 等</div>
+                    </div>
+                    <div style="text-align: right; margin-top: 20px;">
+                        <button type="button" class="btn" onclick="closeModal('vmNetworkModal')">取消</button>
+                        <button type="submit" class="btn btn-success">加入网络</button>
+                    </div>
+                </form>
+            `;
+            
+            document.getElementById('joinSDNForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const vnet = document.getElementById('selected-vnet').value;
+                const netId = document.getElementById('net-id').value;
+                
+                try {
+                    const response = await fetch(`/api/nodes/${node}/vms/${vmid}/join-sdn`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ vnet, netId })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        showAlert('VM已成功加入SDN网络', 'success');
+                        closeModal('vmNetworkModal');
+                    } else {
+                        showAlert('加入失败: ' + result.message, 'error');
+                    }
+                } catch (error) {
+                    showAlert('加入SDN失败: ' + error.message, 'error');
+                }
+            });
+            
+            document.getElementById('vmNetworkModal').style.display = 'block';
+        }
+
+        // VM离开SDN
+        async function leaveSDN(node, vmid) {
+            if (!confirm(`确定要让 VM ${vmid} 离开SDN网络吗？`)) return;
+            
+            try {
+                const response = await fetch(`/api/nodes/${node}/vms/${vmid}/leave-sdn`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ netId: 'net0' })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('VM已离开SDN网络', 'success');
+                } else {
+                    showAlert('操作失败: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showAlert('离开SDN失败: ' + error.message, 'error');
+            }
+        }
+
+        // 应用SDN配置
+        async function applySDNConfig() {
+            if (!confirm('确定要应用SDN配置吗？这可能会影响网络连接。')) return;
+            
+            try {
+                const response = await fetch('/api/sdn/apply', {
+                    method: 'POST'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('SDN配置应用成功', 'success');
+                } else {
+                    showAlert('应用失败: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showAlert('应用SDN配置失败: ' + error.message, 'error');
+            }
+        }
+
+        // 刷新所有数据
+        async function refreshAll() {
+            const refreshBtn = document.querySelector('button[onclick="refreshAll()"]');
+            const loading = document.getElementById('refresh-loading');
+            
+            refreshBtn.disabled = true;
+            loading.style.display = 'inline-block';
+            
+            try {
+                await Promise.all([
+                    checkSystemStatus(),
+                    loadNodes(),
+                    loadSDNNetworks(),
+                    selectedNode ? loadVMs(selectedNode) : Promise.resolve()
+                ]);
+                
+                showAlert('数据刷新成功', 'success');
+            } catch (error) {
+                showAlert('刷新失败: ' + error.message, 'error');
+            } finally {
+                refreshBtn.disabled = false;
+                loading.style.display = 'none';
+            }
+        }
+
+        // 点击模态框外部关闭
+        window.onclick = function(event) {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

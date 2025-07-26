@@ -1,0 +1,288 @@
+{
+  "project": "PVE Manager",
+  "created": "2025-07-20T02:55:11.870Z",
+  "sessions": [
+    {
+      "id": "session-20250720-0255",
+      "started": "2025-07-20T02:55:11.871Z",
+      "activities": [
+        {
+          "id": "activity-1752980111871",
+          "timestamp": "2025-07-20T02:55:11.871Z",
+          "action": "project_initialized",
+          "details": {
+            "args": []
+          },
+          "sessionId": "session-20250720-0255"
+        },
+        {
+          "id": "activity-1752980133425",
+          "timestamp": "2025-07-20T02:55:33.425Z",
+          "action": "context_saved",
+          "details": {
+            "size": 712
+          },
+          "sessionId": "session-20250720-0255"
+        }
+      ],
+      "fileCount": 6,
+      "linesAdded": 0,
+      "lastActivity": "2025-07-20T02:55:33.425Z"
+    },
+    {
+      "id": "session-20250720-0259",
+      "started": "2025-07-20T02:59:54.600Z",
+      "activities": [
+        {
+          "id": "activity-1752980394600",
+          "timestamp": "2025-07-20T02:59:54.600Z",
+          "action": "pve_api_implementation_completed",
+          "details": {
+            "args": []
+          },
+          "sessionId": "session-20250720-0259"
+        }
+      ],
+      "fileCount": 13,
+      "linesAdded": 0,
+      "lastActivity": "2025-07-20T02:59:54.600Z"
+    },
+    {
+      "id": "session-20250720-0305",
+      "started": "2025-07-20T03:05:33.458Z",
+      "activities": [
+        {
+          "id": "activity-1752980733458",
+          "timestamp": "2025-07-20T03:05:33.458Z",
+          "action": "frontend_implementation_completed",
+          "details": {
+            "args": []
+          },
+          "sessionId": "session-20250720-0305"
+        }
+      ],
+      "fileCount": 25,
+      "linesAdded": 0,
+      "lastActivity": "2025-07-20T03:05:33.458Z"
+    },
+    {
+      "id": "session-20250720-0309",
+      "started": "2025-07-20T03:09:41.804Z",
+      "activities": [
+        {
+          "id": "activity-1752980981804",
+          "timestamp": "2025-07-20T03:09:41.804Z",
+          "action": "context_saved",
+          "details": {
+            "size": 887
+          },
+          "sessionId": "session-20250720-0309"
+        }
+      ],
+      "fileCount": 25,
+      "linesAdded": 0,
+      "lastActivity": "2025-07-20T03:09:41.804Z"
+    },
+    {
+      "id": "session-20250720-0310",
+      "started": "2025-07-20T03:10:18.154Z",
+      "activities": [
+        {
+          "id": "activity-1752981018154",
+          "timestamp": "2025-07-20T03:10:18.154Z",
+          "action": "project_completed",
+          "details": {
+            "args": []
+          },
+          "sessionId": "session-20250720-0310"
+        }
+      ],
+      "fileCount": 25,
+      "linesAdded": 0,
+      "lastActivity": "2025-07-20T03:10:18.154Z"
+    },
+    {
+      "id": "session-20250720-0327",
+      "started": "2025-07-20T03:27:38.382Z",
+      "activities": [
+        {
+          "id": "activity-1752982058383",
+          "timestamp": "2025-07-20T03:27:38.382Z",
+          "action": "application_successfully_started",
+          "details": {
+            "args": []
+          },
+          "sessionId": "session-20250720-0327"
+        },
+        {
+          "id": "activity-1752982058421",
+          "timestamp": "2025-07-20T03:27:38.420Z",
+          "action": "context_saved",
+          "details": {
+            "size": 776
+          },
+          "sessionId": "session-20250720-0327"
+        }
+      ],
+      "fileCount": 29,
+      "linesAdded": 0,
+      "lastActivity": "2025-07-20T03:27:38.420Z"
+    },
+    {
+      "id": "session-20250720-0333",
+      "started": "2025-07-20T03:33:30.343Z",
+      "activities": [
+        {
+          "id": "activity-1752982410343",
+          "timestamp": "2025-07-20T03:33:30.343Z",
+          "action": "network_access_configured",
+          "details": {
+            "args": []
+          },
+          "sessionId": "session-20250720-0333"
+        },
+        {
+          "id": "activity-1752982410377",
+          "timestamp": "2025-07-20T03:33:30.377Z",
+          "action": "context_saved",
+          "details": {
+            "size": 884
+          },
+          "sessionId": "session-20250720-0333"
+        }
+      ],
+      "fileCount": 29,
+      "linesAdded": 0,
+      "lastActivity": "2025-07-20T03:33:30.377Z"
+    },
+    {
+      "id": "session-20250720-0409",
+      "started": "2025-07-20T04:09:56.350Z",
+      "activities": [
+        {
+          "id": "activity-1752984596350",
+          "timestamp": "2025-07-20T04:09:56.350Z",
+          "action": "traffic_monitoring_feature_completed",
+          "details": {
+            "args": []
+          },
+          "sessionId": "session-20250720-0409"
+        },
+        {
+          "id": "activity-1752984596489",
+          "timestamp": "2025-07-20T04:09:56.489Z",
+          "action": "context_saved",
+          "details": {
+            "size": 985
+          },
+          "sessionId": "session-20250720-0409"
+        }
+      ],
+      "fileCount": 34,
+      "linesAdded": 0,
+      "lastActivity": "2025-07-20T04:09:56.489Z"
+    },
+    {
+      "id": "session-20250720-0418",
+      "started": "2025-07-20T04:18:28.830Z",
+      "activities": [
+        {
+          "id": "activity-1752985108830",
+          "timestamp": "2025-07-20T04:18:28.830Z",
+          "action": "traffic_monitoring_data_ready",
+          "details": {
+            "args": []
+          },
+          "sessionId": "session-20250720-0418"
+        },
+        {
+          "id": "activity-1752985108866",
+          "timestamp": "2025-07-20T04:18:28.866Z",
+          "action": "context_saved",
+          "details": {
+            "size": 1003
+          },
+          "sessionId": "session-20250720-0418"
+        }
+      ],
+      "fileCount": 37,
+      "linesAdded": 0,
+      "lastActivity": "2025-07-20T04:18:28.866Z"
+    },
+    {
+      "id": "session-20250726-2023",
+      "started": "2025-07-26T12:23:58.607Z",
+      "activities": [
+        {
+          "id": "activity-1753532638608",
+          "timestamp": "2025-07-26T12:23:58.607Z",
+          "action": "application_started",
+          "details": {
+            "args": []
+          },
+          "sessionId": "session-20250726-2023"
+        }
+      ],
+      "fileCount": 100,
+      "linesAdded": 0,
+      "lastActivity": "2025-07-26T12:23:58.607Z"
+    },
+    {
+      "id": "session-20250726-2030",
+      "started": "2025-07-26T12:30:52.401Z",
+      "activities": [
+        {
+          "id": "activity-1753533052401",
+          "timestamp": "2025-07-26T12:30:52.401Z",
+          "action": "application_started",
+          "details": {
+            "args": []
+          },
+          "sessionId": "session-20250726-2030"
+        }
+      ],
+      "fileCount": 100,
+      "linesAdded": 0,
+      "lastActivity": "2025-07-26T12:30:52.401Z"
+    },
+    {
+      "id": "session-20250726-2037",
+      "started": "2025-07-26T12:37:37.803Z",
+      "activities": [
+        {
+          "id": "activity-1753533457803",
+          "timestamp": "2025-07-26T12:37:37.803Z",
+          "action": "application_started",
+          "details": {
+            "args": []
+          },
+          "sessionId": "session-20250726-2037"
+        }
+      ],
+      "fileCount": 100,
+      "linesAdded": 0,
+      "lastActivity": "2025-07-26T12:37:37.803Z"
+    },
+    {
+      "id": "session-20250726-2053",
+      "started": "2025-07-26T12:53:54.183Z",
+      "activities": [
+        {
+          "id": "activity-1753534434183",
+          "timestamp": "2025-07-26T12:53:54.183Z",
+          "action": "application_started",
+          "details": {
+            "args": []
+          },
+          "sessionId": "session-20250726-2053"
+        }
+      ],
+      "fileCount": 100,
+      "linesAdded": 0,
+      "lastActivity": "2025-07-26T12:53:54.183Z"
+    }
+  ],
+  "totalActivities": 18,
+  "lastActivity": "2025-07-26T12:53:54.183Z",
+  "version": "1.0.0"
+}

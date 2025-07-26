@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  pve-manager:
+    build: .
+    container_name: pve-manager
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - PORT=3000
+      - TZ=${TZ:-Asia/Shanghai}
+    volumes:
+      # 数据持久化
+      - pve_data:/app/server/data
+      - pve_logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+volumes:
+  pve_data:
+    driver: local
+  pve_logs:
+    driver: local

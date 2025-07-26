@@ -1,0 +1,17 @@
+{
+  "pve": {
+    "host": "YOUR_PVE_SERVER_IP",
+    "port": 8006,
+    "username": "YOUR_PVE_USERNAME@pam",
+    "password": "YOUR_PVE_PASSWORD",
+    "node": "pve",
+    "timeout": 1000,
+    "retries": 3
+  },
+  "system": {
+    "autoApply": true,
+    "logLevel": "info",
+    "enableHttps": false
+  },
+  "lastUpdated": "TIMESTAMP_PLACEHOLDER"
+}
