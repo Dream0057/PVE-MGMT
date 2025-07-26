@@ -6,7 +6,8 @@
 - Node.js 16+
 - npm 8+
 - 能访问PVE服务器的网络环境
-安装命令：
+
+###安装命令：
 curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
 apt install -y nodejs
 
@@ -19,6 +20,8 @@ cd pve-manager
 chmod +x start.sh
 ./start.sh
 ```
+<img width="1096" height="613" alt="image" src="https://github.com/user-attachments/assets/86252e69-73e3-4487-9f68-3df916fa3d89" />
+
 
 ### 2. 访问应用
 - 前端界面: http://localhost:5173
